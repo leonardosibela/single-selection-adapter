@@ -14,10 +14,10 @@ import java.util.List;
 public class StringAdapter extends RecyclerView.Adapter<StringAdapter.StringViewHolder> {
 
     private List<String> strings;
-    private Integer selectedPosition;
-    private boolean userClicked = true;
+    private int selectedPosition = -1;
+    private int lastSelectedPosition = -1;
 
-    public StringAdapter(List<String> strings) {
+    StringAdapter(List<String> strings) {
         this.strings = strings;
     }
 
@@ -30,40 +30,26 @@ public class StringAdapter extends RecyclerView.Adapter<StringAdapter.StringView
 
     @Override
     public void onBindViewHolder(@NonNull final StringViewHolder holder, final int position) {
-        String string = strings.get(position);
+        final String string = strings.get(position);
         holder.rewardText.setText(string);
 
-        if (selectedPosition != null && selectedPosition == position) {
-            holder.checkbox.setChecked(true);
-        } else {
+
+        if (selectedPosition != -1 && selectedPosition != holder.getAdapterPosition()) {
             holder.checkbox.setChecked(false);
         }
 
         holder.checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                checkAndUncheck(isChecked, position);
+                if (isChecked) {
+                    selectedPosition = holder.getAdapterPosition();
+                    if (lastSelectedPosition != -1) {
+                        notifyItemChanged(lastSelectedPosition);
+                    }
+                    lastSelectedPosition = position;
+                }
             }
         });
-    }
-
-    private void checkAndUncheck(boolean isChecked, int position) {
-        if (!userClicked) {
-            userClicked = true;
-            return;
-        }
-
-        if (isChecked) {
-            if (selectedPosition != null) {
-                int oldPosition = selectedPosition;
-                userClicked = false;
-                selectedPosition = position;
-                notifyItemChanged(oldPosition);
-            }
-            selectedPosition = position;
-        } else {
-            selectedPosition = null;
-        }
     }
 
     @Override
